@@ -11,7 +11,7 @@ struct KKApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("K.K's App") {
             ContentView(openedFile: appDelegate.openedFile)
         }
         .windowStyle(.titleBar)

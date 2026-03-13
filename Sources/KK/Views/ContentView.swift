@@ -27,8 +27,11 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(NavItem.allCases, selection: $selection) { item in
-                Label(item.label, systemImage: item.icon)
+            List(selection: $selection) {
+                ForEach(NavItem.allCases) { item in
+                    Label(item.label, systemImage: item.icon)
+                        .tag(item)
+                }
             }
             .navigationSplitViewColumnWidth(min: 140, ideal: 160, max: 200)
         } detail: {
