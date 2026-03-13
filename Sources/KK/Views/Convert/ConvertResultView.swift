@@ -41,7 +41,7 @@ struct ConvertResultView: View {
                     }
                     .buttonStyle(.bordered)
 
-                    Button("Convert Another") {
+                    Button("Home") {
                         onReset()
                     }
                     .buttonStyle(.borderedProminent)
