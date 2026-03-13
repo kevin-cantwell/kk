@@ -2,23 +2,17 @@
 import PackageDescription
 
 let package = Package(
-    name: "TapeDesk",
+    name: "KK",
     platforms: [.macOS(.v14)],
-    dependencies: [
-        .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.0.0"),
-    ],
     targets: [
         .executableTarget(
-            name: "TapeDesk",
-            dependencies: [
-                .product(name: "GRDB", package: "GRDB.swift"),
-            ],
-            path: "Sources/TapeDesk"
+            name: "KK",
+            path: "Sources/KK"
         ),
         .testTarget(
-            name: "TapeDeskTests",
-            dependencies: ["TapeDesk"],
-            path: "Tests/TapeDeskTests",
+            name: "KKTests",
+            dependencies: ["KK"],
+            path: "Tests/KKTests",
             swiftSettings: [
                 .unsafeFlags(["-F/Library/Developer/CommandLineTools/Library/Developer/Frameworks"]),
             ],
