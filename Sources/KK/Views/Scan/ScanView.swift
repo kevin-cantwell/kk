@@ -6,13 +6,9 @@ struct ScanView: View {
     @State private var selectedFormat: ScanOutputFormat = .pdf
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Scan Document")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            switch scannerService.state {
+        ScrollView {
+            VStack(spacing: 20) {
+                switch scannerService.state {
             case .idle:
                 startButton
 
@@ -31,6 +27,8 @@ struct ScanView: View {
             case .error(let message):
                 errorView(message)
             }
+            }
+            .padding(24)
         }
     }
 
