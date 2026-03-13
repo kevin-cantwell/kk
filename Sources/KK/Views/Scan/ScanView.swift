@@ -114,7 +114,7 @@ struct ScanView: View {
             Image(nsImage: image)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(maxHeight: 400)
+                .frame(maxHeight: 240)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
