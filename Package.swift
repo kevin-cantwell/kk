@@ -8,6 +8,7 @@ let package = Package(
         .executableTarget(
             name: "KK",
             path: "Sources/KK",
+            exclude: ["Vendor"],
             resources: [
                 .process("Resources"),
             ]

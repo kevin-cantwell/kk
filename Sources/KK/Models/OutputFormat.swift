@@ -3,6 +3,7 @@ import Foundation
 enum ConversionMethod: Sendable {
     case sips
     case afconvert
+    case lame
     case avfoundation
 }
 
@@ -10,7 +11,7 @@ enum OutputFormat: String, CaseIterable, Identifiable, Sendable {
     // Image (sips — built into macOS)
     case jpg, png, heic
     // Audio (afconvert — built into macOS)
-    case m4a, wav
+    case mp3, aac, m4a, wav
     // Video (AVFoundation)
     case mp4, mov
 
@@ -21,6 +22,8 @@ enum OutputFormat: String, CaseIterable, Identifiable, Sendable {
         case .jpg:  "JPG"
         case .png:  "PNG"
         case .heic: "HEIC"
+        case .mp3:  "MP3"
+        case .aac:  "AAC"
         case .m4a:  "M4A"
         case .wav:  "WAV"
         case .mp4:  "MP4"
@@ -33,7 +36,7 @@ enum OutputFormat: String, CaseIterable, Identifiable, Sendable {
     var mediaType: MediaType {
         switch self {
         case .jpg, .png, .heic: .image
-        case .m4a, .wav:        .audio
+        case .mp3, .aac, .m4a, .wav: .audio
         case .mp4, .mov:        .video
         }
     }
@@ -41,7 +44,8 @@ enum OutputFormat: String, CaseIterable, Identifiable, Sendable {
     var conversionMethod: ConversionMethod {
         switch self {
         case .jpg, .png, .heic: .sips
-        case .m4a, .wav:        .afconvert
+        case .mp3:              .lame
+        case .aac, .m4a, .wav:  .afconvert
         case .mp4, .mov:        .avfoundation
         }
     }
@@ -56,9 +60,16 @@ enum OutputFormat: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// lame arguments for MP3 encoding
+    func lameArguments(input: String, output: String) -> [String] {
+        return ["-V", "2", input, output]
+    }
+
     /// afconvert arguments for audio conversions
     func afconvertArguments(input: String, output: String) -> [String] {
         switch self {
+        case .aac:
+            return ["-f", "adts", "-d", "aac", "-b", "192000", input, output]
         case .m4a:
             return ["-f", "m4af", "-d", "aac", "-b", "192000", input, output]
         case .wav:
@@ -75,7 +86,7 @@ enum OutputFormat: String, CaseIterable, Identifiable, Sendable {
     static func defaultFormat(for mediaType: MediaType) -> OutputFormat {
         switch mediaType {
         case .image:   .jpg
-        case .audio:   .m4a
+        case .audio:   .mp3
         case .video:   .mp4
         case .unknown: .mp4
         }

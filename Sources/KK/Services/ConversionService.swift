@@ -70,6 +70,8 @@ final class ConversionService: ObservableObject {
             result = await convertWithSips(input: input, format: format, outputURL: outputURL)
         case .afconvert:
             result = await convertWithAfconvert(input: input, format: format, outputURL: outputURL)
+        case .lame:
+            result = await convertWithLame(input: input, format: format, outputURL: outputURL)
         case .avfoundation:
             result = await convertWithAVFoundation(input: input, format: format, outputURL: outputURL)
         }
@@ -109,6 +111,30 @@ final class ConversionService: ObservableObject {
         return toResult(cliResult, outputURL: outputURL, format: format)
     }
 
+    // MARK: - MP3 conversion via bundled lame
+
+    private func convertWithLame(input: URL, format: OutputFormat, outputURL: URL) async -> ConversionResult {
+        // lame only accepts WAV/AIFF input, so first decode to WAV via afconvert
+        let tempWav = FileManager.default.temporaryDirectory
+            .appendingPathComponent("kk_\(UUID().uuidString).wav")
+        defer { try? FileManager.default.removeItem(at: tempWav) }
+
+        let decodeArgs = ["-f", "WAVE", "-d", "LEI16", input.path, tempWav.path]
+        print("[KK] Running: afconvert \(decodeArgs.joined(separator: " "))")
+        let decodeResult = await runCLI(executable: "/usr/bin/afconvert", arguments: decodeArgs)
+        if !decodeResult.success {
+            return toResult(decodeResult, outputURL: outputURL, format: format)
+        }
+
+        // Find lame: bundled in .app, or next to executable, or in PATH
+        let lamePath = Self.findLame()
+        let lameArgs = format.lameArguments(input: tempWav.path, output: outputURL.path)
+        print("[KK] Running: lame \(lameArgs.joined(separator: " "))")
+
+        let lameResult = await runCLI(executable: lamePath, arguments: lameArgs)
+        return toResult(lameResult, outputURL: outputURL, format: format)
+    }
+
     // MARK: - Video conversion via AVFoundation
 
     private func convertWithAVFoundation(input: URL, format: OutputFormat, outputURL: URL) async -> ConversionResult {
@@ -138,6 +164,35 @@ final class ConversionService: ObservableObject {
         default:
             return ConversionResult(outputURL: outputURL, success: false, errorMessage: "Conversion failed.")
         }
+    }
+
+    // MARK: - Lame path resolution
+
+    private static func findLame() -> String {
+        // 1. Bundled in .app (production)
+        let bundled = Bundle.main.bundleURL
+            .appendingPathComponent("Contents/MacOS/lame").path
+        if FileManager.default.isExecutableFile(atPath: bundled) {
+            return bundled
+        }
+        // 2. In project Vendor directory (swift run / development)
+        let execURL = URL(fileURLWithPath: ProcessInfo.processInfo.arguments[0])
+        // Walk up from the executable to find the project root
+        var dir = execURL.deletingLastPathComponent()
+        for _ in 0..<10 {
+            let vendorLame = dir.appendingPathComponent("Sources/KK/Vendor/lame").path
+            if FileManager.default.isExecutableFile(atPath: vendorLame) {
+                return vendorLame
+            }
+            dir = dir.deletingLastPathComponent()
+        }
+        // 3. Homebrew / system PATH fallback
+        for path in ["/opt/homebrew/bin/lame", "/usr/local/bin/lame"] {
+            if FileManager.default.isExecutableFile(atPath: path) {
+                return path
+            }
+        }
+        return "lame" // last resort, will fail with a clear error
     }
 
     // MARK: - Helpers
