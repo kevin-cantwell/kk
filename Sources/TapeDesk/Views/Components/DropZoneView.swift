@@ -18,14 +18,12 @@ struct DropZoneView: View {
             Text("or click to browse")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-
-            Button("Choose Files...") {
-                pickFiles()
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
         }
         .frame(maxWidth: .infinity, minHeight: 160)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            pickFiles()
+        }
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(isTargeted ? Color.blue.opacity(0.08) : Color.secondary.opacity(0.05))

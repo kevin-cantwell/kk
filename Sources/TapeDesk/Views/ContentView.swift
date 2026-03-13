@@ -12,12 +12,8 @@ struct ContentView: View {
                 HomeView(selection: $appState.selectedNavItem)
             case .convert:
                 ConvertView()
-            case .audition:
-                AuditionView()
             case .share:
                 ShareView()
-            case .review:
-                ReviewView()
             case .history:
                 HistoryView()
             case .settings:

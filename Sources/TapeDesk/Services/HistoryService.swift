@@ -18,8 +18,7 @@ final class HistoryService: ObservableObject {
     }
 
     func createJob(workflow: Workflow, sourcePath: String, sourceDisplayName: String, presetName: String) throws -> Job {
-        // swiftlint:disable:next redundant_var
-        var job = Job(  // var needed: insert mutates via didInsert
+        let job = Job(
             id: nil,
             workflow: workflow,
             status: .pending,
@@ -31,11 +30,11 @@ final class HistoryService: ObservableObject {
             createdAt: Date(),
             completedAt: nil
         )
-        try db.dbQueue.write { db in
-            try job.insert(db)
+        let inserted = try db.dbQueue.write { db in
+            try job.inserted(db)
         }
         try loadJobs()
-        return job
+        return inserted
     }
 
     func markCompleted(_ job: Job, outputPaths: [String]) throws {

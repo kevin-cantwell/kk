@@ -6,17 +6,15 @@ struct SidebarView: View {
     var body: some View {
         List(selection: $selection) {
             Section("Workflows") {
-                ForEach([NavigationItem.home, .convert, .audition, .share]) { item in
+                ForEach([NavigationItem.home, .convert, .share]) { item in
                     Label(item.label, systemImage: item.icon)
                         .tag(item)
                 }
             }
 
-            Section("Library") {
-                ForEach([NavigationItem.review, .history]) { item in
-                    Label(item.label, systemImage: item.icon)
-                        .tag(item)
-                }
+            Section {
+                Label(NavigationItem.history.label, systemImage: NavigationItem.history.icon)
+                    .tag(NavigationItem.history)
             }
 
             Section {

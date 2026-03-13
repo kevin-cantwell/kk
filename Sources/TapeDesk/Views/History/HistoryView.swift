@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HistoryView: View {
-    @State private var historyService = HistoryService()
+    @StateObject private var historyService = HistoryService()
 
     var body: some View {
         VStack(spacing: 0) {

@@ -43,22 +43,17 @@ final class DatabaseService: Sendable {
                 t.column("completedAt", .datetime)
             }
 
-            try db.create(table: "reviewItems") { t in
-                t.autoIncrementedPrimaryKey("id")
-                t.column("sourcePath", .text).notNull().unique()
-                t.column("fileSize", .integer).notNull()
-                t.column("modifiedAt", .datetime).notNull()
-                t.column("mediaType", .text).notNull()
-                t.column("durationSeconds", .double)
-                t.column("status", .text).notNull().defaults(to: "unreviewed")
-                t.column("note", .text).notNull().defaults(to: "")
-                t.column("lastReviewedAt", .datetime)
-            }
-
             try db.create(table: "settings") { t in
                 t.primaryKey("key", .text)
                 t.column("value", .text).notNull()
             }
+        }
+
+        migrator.registerMigration("v2_remove_audition_review") { db in
+            // Clean up removed workflows
+            try db.execute(sql: "DELETE FROM jobs WHERE workflow NOT IN ('convert', 'share')")
+            // Drop reviewItems if it exists from v1
+            try db.execute(sql: "DROP TABLE IF EXISTS reviewItems")
         }
 
         return migrator

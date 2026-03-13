@@ -3,7 +3,6 @@ import GRDB
 
 enum Workflow: String, Codable, Sendable {
     case convert
-    case audition
     case share
 }
 
@@ -14,7 +13,7 @@ enum JobStatus: String, Codable, Sendable {
     case failed
 }
 
-struct Job: Codable, Sendable, Identifiable, FetchableRecord, PersistableRecord {
+struct Job: Codable, Sendable, Identifiable, FetchableRecord, MutablePersistableRecord {
     var id: Int64?
     var workflow: Workflow
     var status: JobStatus

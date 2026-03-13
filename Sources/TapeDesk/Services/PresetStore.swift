@@ -85,7 +85,7 @@ enum PresetStore {
         mediaType: .image,
         outputExtension: "jpg",
         ffmpegArguments: { input, output in
-            ["-i", input, "-q:v", "2", "-y", output]
+            ["-i", input, "-q:v", "2", "-frames:v", "1", "-update", "1", "-y", output]
         }
     )
 
@@ -97,7 +97,7 @@ enum PresetStore {
         outputExtension: "jpg",
         ffmpegArguments: { input, output in
             ["-i", input, "-vf", "scale='min(2048,iw)':'min(2048,ih)':force_original_aspect_ratio=decrease",
-             "-q:v", "5", "-y", output]
+             "-q:v", "5", "-frames:v", "1", "-update", "1", "-y", output]
         }
     )
 

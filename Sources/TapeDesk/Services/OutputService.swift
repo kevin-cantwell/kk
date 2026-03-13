@@ -2,7 +2,6 @@ import Foundation
 
 enum OutputFolder: String, Sendable {
     case converted = "Converted"
-    case auditions = "Auditions"
     case shared = "Shared"
     case logs = "Logs"
 }
@@ -10,7 +9,7 @@ enum OutputFolder: String, Sendable {
 enum OutputService {
     static var baseURL: URL {
         FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Downloads")
+            .appendingPathComponent("Desktop")
             .appendingPathComponent("Tape Desk")
     }
 
@@ -32,7 +31,7 @@ enum OutputService {
     }
 
     static func ensureAllFolders() throws {
-        for folder in [OutputFolder.converted, .auditions, .shared, .logs] {
+        for folder in [OutputFolder.converted, .shared, .logs] {
             _ = try ensureFolder(folder)
         }
     }

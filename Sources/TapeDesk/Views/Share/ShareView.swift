@@ -4,8 +4,8 @@ struct ShareView: View {
     @State private var droppedFile: URL?
     @State private var fileInfo: FileIntakeService.FileInfo?
     @State private var selectedIntent: DeliveryIntent?
-    @State private var conversionService = ConversionService()
-    @State private var historyService = HistoryService()
+    @StateObject private var conversionService = ConversionService()
+    @StateObject private var historyService = HistoryService()
     @State private var result: ConversionService.ConversionResult?
     @State private var errorMessage: String?
 
@@ -79,6 +79,7 @@ struct ShareView: View {
                         }
                     }
                     .padding(12)
+                    .contentShape(Rectangle())
                     .background(selectedIntent == intent ? Color.green.opacity(0.1) : Color.clear)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(

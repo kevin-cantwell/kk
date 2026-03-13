@@ -23,7 +23,7 @@ struct DatabaseServiceTests {
 
     @Test func jobCRUD() throws {
         let db = try DatabaseService(inMemory: true)
-        var job = Job(
+        let job = Job(
             id: nil,
             workflow: .convert,
             status: .pending,
@@ -33,10 +33,10 @@ struct DatabaseServiceTests {
             presetName: "make_mp3",
             createdAt: Date()
         )
-        try db.dbQueue.write { dbConn in
-            try job.insert(dbConn)
+        let inserted = try db.dbQueue.write { dbConn in
+            try job.inserted(dbConn)
         }
-        #expect(job.id != nil)
+        #expect(inserted.id != nil)
 
         let fetched = try db.dbQueue.read { dbConn in
             try Job.fetchAll(dbConn)
@@ -47,7 +47,7 @@ struct DatabaseServiceTests {
 
     @Test func reviewItemCRUD() throws {
         let db = try DatabaseService(inMemory: true)
-        var item = ReviewItem(
+        let item = ReviewItem(
             id: nil,
             sourcePath: "/tmp/clip.mp4",
             fileSize: 1024,
@@ -56,10 +56,10 @@ struct DatabaseServiceTests {
             status: .unreviewed,
             note: ""
         )
-        try db.dbQueue.write { dbConn in
-            try item.insert(dbConn)
+        let insertedItem = try db.dbQueue.write { dbConn in
+            try item.inserted(dbConn)
         }
-        #expect(item.id != nil)
+        #expect(insertedItem.id != nil)
 
         let fetched = try db.dbQueue.read { dbConn in
             try ReviewItem.fetchAll(dbConn)

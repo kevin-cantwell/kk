@@ -5,9 +5,7 @@ struct HomeView: View {
 
     private let cards: [(NavigationItem, String, String, Color)] = [
         (.convert, "Convert Files", "Change format, make smaller, or prepare for sharing", .blue),
-        (.audition, "Audition Package", "Bundle files for a project submission", .purple),
         (.share, "Share Files", "Optimize files for a specific delivery method", .green),
-        (.review, "Review Submissions", "Scan and review a folder of media files", .orange),
     ]
 
     var body: some View {

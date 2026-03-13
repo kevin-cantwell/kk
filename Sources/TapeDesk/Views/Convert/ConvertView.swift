@@ -4,9 +4,9 @@ struct ConvertView: View {
     @State private var droppedFile: URL?
     @State private var fileInfo: FileIntakeService.FileInfo?
     @State private var selectedPreset: ConversionPreset?
-    @State private var conversionService = ConversionService()
+    @StateObject private var conversionService = ConversionService()
     @State private var result: ConversionService.ConversionResult?
-    @State private var historyService = HistoryService()
+    @StateObject private var historyService = HistoryService()
     @State private var errorMessage: String?
 
     var body: some View {
@@ -72,6 +72,7 @@ struct ConvertView: View {
                         }
                     }
                     .padding(12)
+                    .contentShape(Rectangle())
                     .background(selectedPreset?.name == preset.name ? Color.blue.opacity(0.1) : Color.clear)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(

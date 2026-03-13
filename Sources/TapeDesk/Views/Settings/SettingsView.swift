@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @State private var actorName: String = ""
     @State private var outputFolder: String = ""
     @State private var saved = false
 
@@ -13,17 +12,6 @@ struct SettingsView: View {
                 Text("Settings")
                     .font(.largeTitle)
                     .fontWeight(.bold)
-
-                GroupBox("Profile") {
-                    VStack(alignment: .leading, spacing: 12) {
-                        TextField("Actor Name", text: $actorName)
-                            .textFieldStyle(.roundedBorder)
-                        Text("Used as default name in Audition packages")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(8)
-                }
 
                 GroupBox("Output") {
                     VStack(alignment: .leading, spacing: 12) {
@@ -64,12 +52,10 @@ struct SettingsView: View {
     }
 
     private func loadSettings() {
-        actorName = (try? db.getSetting("actor_name")) ?? ""
         outputFolder = (try? db.getSetting("default_output_folder")) ?? OutputService.baseURL.path
     }
 
     private func saveSettings() {
-        try? db.setSetting("actor_name", value: actorName)
         try? db.setSetting("default_output_folder", value: outputFolder)
         saved = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
