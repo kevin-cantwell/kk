@@ -45,14 +45,17 @@ final class ScannerService: NSObject, ObservableObject {
 
         let b = ICDeviceBrowser()
         b.delegate = self
-        b.browsedDeviceTypeMask = ICDeviceTypeMask(rawValue:
+        let mask = ICDeviceTypeMask(rawValue:
             ICDeviceTypeMask.scanner.rawValue |
             ICDeviceLocationTypeMask.local.rawValue |
             ICDeviceLocationTypeMask.shared.rawValue |
             ICDeviceLocationTypeMask.bonjour.rawValue
         )!
+        b.browsedDeviceTypeMask = mask
+        print("[KK] Starting scanner browse with mask: \(mask.rawValue)")
         browser = b
         b.start()
+        print("[KK] Browser started, waiting for devices...")
 
         browseTimeoutTask = Task {
             try? await Task.sleep(for: .seconds(4))
@@ -95,7 +98,15 @@ final class ScannerService: NSObject, ObservableObject {
     // MARK: - Private
 
     private func evaluateScanners() {
-        guard state == .browsing else { return }
+        guard state == .browsing else {
+            print("[KK] evaluateScanners called but state is \(state), skipping")
+            return
+        }
+
+        print("[KK] Evaluating scanners: found \(scanners.count)")
+        for (i, s) in scanners.enumerated() {
+            print("[KK]   [\(i)] \(s.name ?? "unnamed") — type:\(s.type.rawValue) transport:\(s.transportType ?? "unknown")")
+        }
 
         if scanners.count == 1 {
             connectToScanner(scanners[0])
@@ -107,6 +118,7 @@ final class ScannerService: NSObject, ObservableObject {
     }
 
     private func connectToScanner(_ scanner: ICScannerDevice) {
+        print("[KK] Connecting to scanner: \(scanner.name ?? "unnamed")")
         state = .connecting
         activeScanner = scanner
         scanner.delegate = self
@@ -117,14 +129,19 @@ final class ScannerService: NSObject, ObservableObject {
         scanTempDirectory = tempDir
         scanner.downloadsDirectory = tempDir
         scanner.transferMode = .fileBased
+        print("[KK] Temp dir: \(tempDir.path), requesting open session...")
 
         scanner.requestOpenSession()
     }
 
     private func configureScannerAndStart(_ scanner: ICScannerDevice) {
-        guard state == .connecting else { return }
+        guard state == .connecting else {
+            print("[KK] configureScannerAndStart called but state is \(state), skipping")
+            return
+        }
 
         let fu = scanner.selectedFunctionalUnit
+        print("[KK] Functional unit: \(fu) type:\(fu.type.rawValue) physicalSize:\(fu.physicalSize)")
         // Pick 300 DPI if supported, otherwise closest available
         let supported = fu.supportedResolutions
         if supported.contains(300) {
@@ -137,9 +154,14 @@ final class ScannerService: NSObject, ObservableObject {
 
         fu.pixelDataType = .RGB
         fu.bitDepth = .depth8Bits
-        fu.scanArea = CGRect(origin: .zero, size: fu.physicalSize)
+        // Cap to US Letter (8.5" x 11") — the bed may report slightly larger (e.g. A4 height)
+        let width = min(fu.physicalSize.width, 8.5)
+        let height = min(fu.physicalSize.height, 11.0)
+        fu.scanArea = CGRect(origin: .zero, size: CGSize(width: width, height: height))
+        print("[KK] Configured: resolution=\(fu.resolution) scanArea=\(fu.scanArea) pixelDataType=\(fu.pixelDataType.rawValue)")
 
         state = .scanning
+        print("[KK] Requesting scan...")
         scanner.requestScan()
     }
 
@@ -192,7 +214,11 @@ final class ScannerService: NSObject, ObservableObject {
 
 extension ScannerService: ICDeviceBrowserDelegate {
     nonisolated func deviceBrowser(_ browser: ICDeviceBrowser, didAdd device: ICDevice, moreComing: Bool) {
-        guard let scanner = device as? ICScannerDevice else { return }
+        print("[KK] Browser didAdd device: \(device.name ?? "unnamed") type:\(device.type.rawValue) moreComing:\(moreComing)")
+        guard let scanner = device as? ICScannerDevice else {
+            print("[KK]   Not a scanner, ignoring")
+            return
+        }
         Task { @MainActor in
             self.scanners.append(scanner)
             if !moreComing && self.state == .browsing {
@@ -202,6 +228,7 @@ extension ScannerService: ICDeviceBrowserDelegate {
     }
 
     nonisolated func deviceBrowser(_ browser: ICDeviceBrowser, didRemove device: ICDevice, moreGoing: Bool) {
+        print("[KK] Browser didRemove device: \(device.name ?? "unnamed")")
         Task { @MainActor in
             self.scanners.removeAll { $0 === device }
         }
@@ -212,19 +239,24 @@ extension ScannerService: ICDeviceBrowserDelegate {
 
 extension ScannerService: ICScannerDeviceDelegate {
     nonisolated func device(_ device: ICDevice, didOpenSessionWithError error: (any Error)?) {
+        print("[KK] didOpenSession for \(device.name ?? "unnamed") error: \(String(describing: error))")
         Task { @MainActor in
             if let error {
                 self.state = .error("Could not connect to scanner: \(error.localizedDescription)")
                 return
             }
-            guard let scanner = device as? ICScannerDevice else { return }
-            self.configureScannerAndStart(scanner)
+            // Don't start scan here — wait for didSelect functionalUnit,
+            // which fires once the functional unit is fully initialized
+            print("[KK] Session open, waiting for functional unit to be ready...")
         }
     }
 
-    nonisolated func device(_ device: ICDevice, didCloseSessionWithError error: (any Error)?) {}
+    nonisolated func device(_ device: ICDevice, didCloseSessionWithError error: (any Error)?) {
+        print("[KK] didCloseSession for \(device.name ?? "unnamed") error: \(String(describing: error))")
+    }
 
     nonisolated func didRemove(_ device: ICDevice) {
+        print("[KK] didRemove device: \(device.name ?? "unnamed")")
         Task { @MainActor in
             if device === self.activeScanner {
                 self.state = .error("Scanner was disconnected.")
@@ -236,6 +268,7 @@ extension ScannerService: ICScannerDeviceDelegate {
     nonisolated func scannerDevice(_ scanner: ICScannerDevice,
                                    didSelect functionalUnit: ICScannerFunctionalUnit,
                                    error: (any Error)?) {
+        print("[KK] didSelect functionalUnit type:\(functionalUnit.type.rawValue) error: \(String(describing: error))")
         Task { @MainActor in
             if let error {
                 self.state = .error("Scanner error: \(error.localizedDescription)")
@@ -246,6 +279,7 @@ extension ScannerService: ICScannerDeviceDelegate {
     }
 
     nonisolated func scannerDevice(_ scanner: ICScannerDevice, didScanTo url: URL) {
+        print("[KK] didScanTo: \(url.path)")
         Task { @MainActor in
             if let image = NSImage(contentsOf: url) {
                 self.scannedImage = image
@@ -259,6 +293,7 @@ extension ScannerService: ICScannerDeviceDelegate {
 
     nonisolated func scannerDevice(_ scanner: ICScannerDevice,
                                    didCompleteScanWithError error: (any Error)?) {
+        print("[KK] didCompleteScan error: \(String(describing: error))")
         Task { @MainActor in
             if let error, self.state == .scanning {
                 self.state = .error("Scan failed: \(error.localizedDescription)")
