@@ -18,7 +18,8 @@ struct ConvertView: View {
                         reset()
                     }
                 } else if conversionService.isRunning {
-                    ProgressOverlay(status: conversionService.currentStatus)
+                    ProgressOverlay(status: conversionService.currentStatus,
+                                     progress: conversionService.progress)
                 } else if let info = fileInfo {
                     FileInfoCard(info: info) {
                         reset()

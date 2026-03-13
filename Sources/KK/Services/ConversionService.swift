@@ -50,7 +50,7 @@ private enum CLIRunner {
 @MainActor
 final class ConversionService: ObservableObject {
     @Published var isRunning = false
-    @Published var progress: Double = 0
+    @Published var progress: Double?
     @Published var currentStatus: String = ""
 
     struct ConversionResult: Sendable {
@@ -61,7 +61,7 @@ final class ConversionService: ObservableObject {
 
     func convert(input: URL, format: OutputFormat, outputURL: URL) async -> ConversionResult {
         isRunning = true
-        progress = 0
+        progress = nil
         currentStatus = "Converting..."
 
         let result: ConversionResult
@@ -119,12 +119,18 @@ final class ConversionService: ObservableObject {
             .appendingPathComponent("kk_\(UUID().uuidString).wav")
         defer { try? FileManager.default.removeItem(at: tempWav) }
 
+        currentStatus = "Decoding audio..."
+        progress = 0
+
         let decodeArgs = ["-f", "WAVE", "-d", "LEI16", input.path, tempWav.path]
         print("[KK] Running: afconvert \(decodeArgs.joined(separator: " "))")
         let decodeResult = await runCLI(executable: "/usr/bin/afconvert", arguments: decodeArgs)
         if !decodeResult.success {
             return toResult(decodeResult, outputURL: outputURL, format: format)
         }
+
+        currentStatus = "Encoding MP3..."
+        progress = 0.5
 
         // Find lame: bundled in .app, or next to executable, or in PATH
         let lamePath = Self.findLame()
@@ -138,6 +144,9 @@ final class ConversionService: ObservableObject {
     // MARK: - Video conversion via AVFoundation
 
     private func convertWithAVFoundation(input: URL, format: OutputFormat, outputURL: URL) async -> ConversionResult {
+        // AVAssetExportSession can't overwrite — remove existing file first
+        try? FileManager.default.removeItem(at: outputURL)
+
         let asset = AVURLAsset(url: input)
 
         let fileType: AVFileType = format == .mp4 ? .mp4 : .mov
@@ -150,10 +159,21 @@ final class ConversionService: ObservableObject {
         session.outputURL = outputURL
         session.outputFileType = fileType
 
+        // Poll progress while exporting
+        let progressTask = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(250))
+                let p = Double(session.progress)
+                await MainActor.run { self.progress = p }
+            }
+        }
+
         await session.export()
+        progressTask.cancel()
 
         switch session.status {
         case .completed:
+            progress = 1.0
             return ConversionResult(outputURL: outputURL, success: true, errorMessage: nil)
         case .failed:
             let msg = session.error?.localizedDescription ?? "Video conversion failed."

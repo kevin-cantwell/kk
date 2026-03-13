@@ -33,11 +33,13 @@ final class ScannerService: NSObject, ObservableObject {
     @Published var state: State = .idle
     @Published var scanners: [ICScannerDevice] = []
     @Published var scannedImage: NSImage?
+    @Published var scanProgress: Double?
 
     private var browser: ICDeviceBrowser?
     private var activeScanner: ICScannerDevice?
     private var scanTempDirectory: URL?
     private var browseTimeoutTask: Task<Void, Never>?
+    private var progressPollTask: Task<Void, Never>?
 
     func startBrowsing() {
         state = .browsing
@@ -70,6 +72,7 @@ final class ScannerService: NSObject, ObservableObject {
     }
 
     func cancelScan() {
+        progressPollTask?.cancel()
         activeScanner?.cancelScan()
         stopBrowsing()
         state = .idle
@@ -79,6 +82,7 @@ final class ScannerService: NSObject, ObservableObject {
         stopBrowsing()
         state = .idle
         scannedImage = nil
+        scanProgress = nil
     }
 
     func save(format: ScanOutputFormat, to url: URL) -> Bool {
@@ -161,11 +165,23 @@ final class ScannerService: NSObject, ObservableObject {
         print("[KK] Configured: resolution=\(fu.resolution) scanArea=\(fu.scanArea) pixelDataType=\(fu.pixelDataType.rawValue)")
 
         state = .scanning
+        scanProgress = 0
         print("[KK] Requesting scan...")
         scanner.requestScan()
+
+        // Poll the functional unit's scanProgressPercentDone
+        progressPollTask = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(300))
+                let pct = scanner.selectedFunctionalUnit.scanProgressPercentDone
+                await MainActor.run { self.scanProgress = max(pct / 100.0, self.scanProgress ?? 0) }
+            }
+        }
     }
 
     private func stopBrowsing() {
+        progressPollTask?.cancel()
+        progressPollTask = nil
         browseTimeoutTask?.cancel()
         browseTimeoutTask = nil
 
