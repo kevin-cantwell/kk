@@ -11,44 +11,41 @@ struct ConvertView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                Text("File Converter")
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(spacing: 20) {
+            Text("File Converter")
+                .font(.headline)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                if result != nil {
-                    ConvertResultView(result: result!, fileInfo: fileInfo!, format: selectedFormat!) {
-                        reset()
-                    }
-                } else if conversionService.isRunning {
-                    ProgressOverlay(status: conversionService.currentStatus)
-                } else if let info = fileInfo {
-                    FileInfoCard(info: info) {
-                        reset()
-                    }
+            if result != nil {
+                ConvertResultView(result: result!, fileInfo: fileInfo!, format: selectedFormat!) {
+                    reset()
+                }
+            } else if conversionService.isRunning {
+                ProgressOverlay(status: conversionService.currentStatus)
+            } else if let info = fileInfo {
+                FileInfoCard(info: info) {
+                    reset()
+                }
 
-                    formatPicker(for: info.mediaType)
+                formatPicker(for: info.mediaType)
 
-                    if selectedFormat != nil {
-                        Button("Convert") {
-                            Task { await pickLocationAndConvert(info: info) }
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
+                if selectedFormat != nil {
+                    Button("Convert") {
+                        Task { await pickLocationAndConvert(info: info) }
                     }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                }
 
-                    if let error = errorMessage {
-                        FriendlyErrorView(message: error)
-                    }
-                } else {
-                    DropZoneView { urls in
-                        handleDrop(urls)
-                    }
+                if let error = errorMessage {
+                    FriendlyErrorView(message: error)
+                }
+            } else {
+                DropZoneView { urls in
+                    handleDrop(urls)
                 }
             }
-            .padding(24)
         }
         .onAppear {
             if let url = openedFile.url {

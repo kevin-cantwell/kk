@@ -4,6 +4,15 @@ struct ContentView: View {
     let openedFile: OpenedFile
 
     var body: some View {
-        ConvertView(openedFile: openedFile)
+        ScrollView {
+            VStack(spacing: 32) {
+                ConvertView(openedFile: openedFile)
+
+                Divider()
+
+                ScanView()
+            }
+            .padding(24)
+        }
     }
 }

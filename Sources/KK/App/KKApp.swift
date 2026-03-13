@@ -15,7 +15,7 @@ struct KKApp: App {
             ContentView(openedFile: appDelegate.openedFile)
         }
         .windowStyle(.titleBar)
-        .defaultSize(width: 600, height: 480)
+        .defaultSize(width: 600, height: 580)
     }
 }
 
