@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K.K's App</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #f0f0f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        main {
+            text-align: center;
+            max-width: 540px;
+            padding: 48px 24px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .tagline {
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+        .download-btn {
+            display: inline-block;
+            background: #007AFF;
+            color: white;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .download-btn:hover {
+            background: #0066DD;
+        }
+        .version {
+            margin-top: 16px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        .requirements {
+            margin-top: 32px;
+            font-size: 0.9rem;
+            color: #888;
+            line-height: 1.6;
+        }
+        .install-note {
+            margin-top: 24px;
+            padding: 16px 20px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #999;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>K.K's App</h1>
+        <p class="tagline">
+            A simple Mac app for converting images, audio, and video
+            &mdash; plus scanning documents. No installs, no fuss.
+        </p>
+        <a class="download-btn"
+           href="https://github.com/kevin-cantwell/kk/releases/latest/download/KK-1.0.0.dmg">
+            Download for Mac
+        </a>
+        <p class="version">Version 1.0.0</p>
+        <p class="requirements">Requires macOS Sonoma (14) or later.</p>
+        <div class="install-note">
+            <strong>First launch:</strong> Since this app isn't from the App Store,
+            macOS may ask you to approve it. Right-click the app and choose
+            <em>Open</em>, then click <em>Open</em> again in the dialog.
+            You only need to do this once.
+        </div>
+    </main>
+</body>
+</html>

@@ -129,9 +129,9 @@ struct AboutView: View {
     }
 
     private func loadHeadshot() -> NSImage? {
-        guard let url = Bundle.module.url(forResource: "kkmoggie", withExtension: "jpg") else {
-            return nil
-        }
+        let url = Bundle.main.url(forResource: "kkmoggie", withExtension: "jpg")
+            ?? Bundle.module.url(forResource: "kkmoggie", withExtension: "jpg")
+        guard let url else { return nil }
         return NSImage(contentsOf: url)
     }
 }
