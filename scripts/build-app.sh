@@ -80,8 +80,13 @@ cat > "$APP_DIR/Contents/Info.plist" << PLIST
 </plist>
 PLIST
 
-# Ad-hoc code sign
-echo "Code signing..."
-codesign --force --deep --sign - "$APP_DIR"
+# Code sign with Developer ID
+IDENTITY="Developer ID Application: KEVIN MICHAEL CANTWELL (N6V2PD494A)"
+echo "Code signing with: $IDENTITY"
+codesign --force --options runtime --sign "$IDENTITY" "$APP_DIR/Contents/MacOS/KK"
+codesign --force --options runtime --sign "$IDENTITY" "$APP_DIR"
+
+echo "Verifying signature..."
+codesign --verify --deep --strict "$APP_DIR"
 
 echo "Done: $APP_DIR"

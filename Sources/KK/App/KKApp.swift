@@ -1,9 +1,8 @@
 import SwiftUI
 import AppKit
 
-@Observable
-final class OpenedFile: @unchecked Sendable {
-    var url: URL?
+final class OpenedFile: ObservableObject, @unchecked Sendable {
+    @Published var url: URL?
 }
 
 @main
@@ -11,8 +10,9 @@ struct KKApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        WindowGroup("K.K's App") {
+        Window("K.K's App", id: "main") {
             ContentView(openedFile: appDelegate.openedFile)
+                .frame(minWidth: 520, minHeight: 400)
         }
         .windowStyle(.titleBar)
         .defaultSize(width: 720, height: 540)
@@ -155,17 +155,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, @unchecked Sendable {
         true
     }
 
-    func application(_ sender: NSApplication, openFiles filenames: [String]) {
-        guard let first = filenames.first else {
-            sender.reply(toOpenOrPrint: .failure)
-            return
+    func application(_ application: NSApplication, open urls: [URL]) {
+        guard let url = urls.first, FileIntakeService.validate(url: url) else { return }
+        openedFile.url = url
+        if let window = application.windows.first(where: { $0.title == "K.K's App" }) {
+            window.makeKeyAndOrderFront(nil)
         }
-        let url = URL(fileURLWithPath: first)
-        if FileIntakeService.validate(url: url) {
-            openedFile.url = url
-            sender.reply(toOpenOrPrint: .success)
-        } else {
-            sender.reply(toOpenOrPrint: .failure)
-        }
+        application.activate()
     }
 }

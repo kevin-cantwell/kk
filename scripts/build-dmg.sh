@@ -29,4 +29,11 @@ hdiutil create -volname "KK" \
 
 rm -rf "$STAGING"
 
+# Notarize the DMG
+echo "Submitting for notarization..."
+xcrun notarytool submit "$DMG_PATH" --keychain-profile "notary" --wait
+
+echo "Stapling notarization ticket..."
+xcrun stapler staple "$DMG_PATH"
+
 echo "Done: $DMG_PATH"

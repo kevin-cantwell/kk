@@ -22,7 +22,7 @@ enum NavItem: String, Hashable, CaseIterable, Identifiable {
 }
 
 struct ContentView: View {
-    let openedFile: OpenedFile
+    @ObservedObject var openedFile: OpenedFile
     @State private var selection: NavItem? = .convert
 
     var body: some View {

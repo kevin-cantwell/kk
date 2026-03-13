@@ -2,7 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ConvertView: View {
-    let openedFile: OpenedFile
+    @ObservedObject var openedFile: OpenedFile
     @State private var droppedFile: URL?
     @State private var fileInfo: FileIntakeService.FileInfo?
     @State private var selectedFormat: OutputFormat?
