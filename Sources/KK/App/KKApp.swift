@@ -137,7 +137,7 @@ struct AboutView: View {
 }
 
 enum AppVersion {
-    static let current = "1.0.1"
+    static let current = "1.0.2"
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate, @unchecked Sendable {

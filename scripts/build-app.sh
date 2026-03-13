@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PROJECT_DIR/build"
 APP_DIR="$BUILD_DIR/KK.app"
-VERSION="1.0.1"
+VERSION="1.0.2"
 
 cd "$PROJECT_DIR"
 
@@ -22,6 +22,10 @@ cp .build/release/KK "$APP_DIR/Contents/MacOS/KK"
 
 # Copy resources into Contents/Resources (app code falls back to Bundle.main)
 cp "$PROJECT_DIR/Sources/KK/Resources/kkmoggie.jpg" "$APP_DIR/Contents/Resources/kkmoggie.jpg"
+
+# Bundle lame for MP3 encoding
+cp "$PROJECT_DIR/Sources/KK/Vendor/lame" "$APP_DIR/Contents/MacOS/lame"
+chmod +x "$APP_DIR/Contents/MacOS/lame"
 
 # Generate app icon (vanity mirror with bulbs)
 echo "Generating app icon..."
@@ -83,6 +87,7 @@ PLIST
 # Code sign with Developer ID
 IDENTITY="Developer ID Application: KEVIN MICHAEL CANTWELL (N6V2PD494A)"
 echo "Code signing with: $IDENTITY"
+codesign --force --options runtime --sign "$IDENTITY" "$APP_DIR/Contents/MacOS/lame"
 codesign --force --options runtime --sign "$IDENTITY" "$APP_DIR/Contents/MacOS/KK"
 codesign --force --options runtime --sign "$IDENTITY" "$APP_DIR"
 

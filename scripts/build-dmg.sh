@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PROJECT_DIR/build"
 APP_DIR="$BUILD_DIR/KK.app"
-VERSION="1.0.1"
+VERSION="1.0.2"
 DMG_NAME="KK-${VERSION}.dmg"
 DMG_PATH="$BUILD_DIR/$DMG_NAME"
 
